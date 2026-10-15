@@ -1,0 +1,1356 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cachet Interactive Demo</title>
+<meta name="description" content="An interactive simulation of Cachet, centrally managed email signatures for Microsoft 365, designed and developed by Alyssa I. Agard.">
+<link rel="icon" href="favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="32x32" href="media/cachet-icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="media/cachet-icon-16.png">
+<link rel="apple-touch-icon" href="media/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAF8F3;
+  --surface: #FFFFFF;
+  --surface-2: #F0EBE0;
+  --ink: #1A1A1A;
+  --ink-soft: #4A4A4A;
+  --muted: #6B665C;
+  --gold: #A88B5C;
+  --accent: #7D6440;
+  --accent-hover: #6A5436;
+  --on-accent: #FFFFFF;
+  --line: #E4DCCB;
+  --focus: #A88B5C;
+  --ok: #2F6B3A;
+  --ok-bg: #E7F1E5;
+  --note-bg: #F6F0E2;
+  --shadow: 0 1px 2px rgba(26, 26, 26, .05), 0 6px 20px rgba(26, 26, 26, .05);
+  --display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --body: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #151412;
+    --surface: #1E1C19;
+    --surface-2: #29261F;
+    --ink: #F2EEE6;
+    --ink-soft: #D2CBBE;
+    --muted: #A69F92;
+    --gold: #C4A676;
+    --accent: #C4A676;
+    --accent-hover: #D6BB8E;
+    --on-accent: #1A1A1A;
+    --line: #3A352D;
+    --focus: #D6BB8E;
+    --ok: #9FD3A6;
+    --ok-bg: #22301F;
+    --note-bg: #2A261E;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 20px rgba(0, 0, 0, .25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #151412;
+  --surface: #1E1C19;
+  --surface-2: #29261F;
+  --ink: #F2EEE6;
+  --ink-soft: #D2CBBE;
+  --muted: #A69F92;
+  --gold: #C4A676;
+  --accent: #C4A676;
+  --accent-hover: #D6BB8E;
+  --on-accent: #1A1A1A;
+  --line: #3A352D;
+  --focus: #D6BB8E;
+  --ok: #9FD3A6;
+  --ok-bg: #22301F;
+  --note-bg: #2A261E;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 20px rgba(0, 0, 0, .25);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.5;
+}
+a { color: var(--accent); }
+a:hover { color: var(--accent-hover); }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 16px; }
+
+/* Header */
+.top { border-bottom: 1px solid var(--line); background: var(--surface); }
+.top .wrap { display: flex; align-items: center; gap: 16px; min-height: 64px; flex-wrap: wrap; }
+.wordmark { font-family: var(--display); font-style: italic; font-weight: 500; font-size: 34px; line-height: 1; letter-spacing: .2px; text-decoration: none; color: var(--ink); }
+.wordmark .dot { color: var(--gold); font-size: 1.5em; line-height: 0; }
+.badge { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
+.top .spacer { flex: 1; }
+.top .by { font-size: 13px; color: var(--muted); }
+
+.hero { padding: 28px 0 8px; }
+.hero h1 { font-family: var(--display); font-style: italic; font-weight: 500; font-size: clamp(30px, 5vw, 44px); line-height: 1.1; margin: 0 0 10px; }
+.hero p { margin: 0 0 8px; max-width: 760px; color: var(--ink-soft); }
+.sim-note { display: inline-block; margin-top: 6px; font-size: 13px; color: var(--muted); background: var(--note-bg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; }
+
+/* Tabs */
+.tabs { display: flex; gap: 4px; margin: 20px 0 0; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { appearance: none; background: none; border: 0; border-bottom: 2px solid transparent; padding: 10px 14px; cursor: pointer; color: var(--muted); white-space: nowrap; font-size: 15px; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--gold); font-weight: 600; }
+.tab:hover { color: var(--ink); }
+.panel { padding: 20px 0 40px; }
+.panel[hidden] { display: none; }
+
+/* Cards and controls */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 16px; min-width: 0; }
+.card h2 { font-size: 17px; margin: 0 0 4px; }
+.card h3 { font-size: 15px; margin: 18px 0 8px; }
+.card > p, .sub { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+.tip { font-size: 13px; color: var(--muted); background: var(--note-bg); border-radius: 8px; padding: 8px 10px; margin: 0 0 12px; }
+.tip strong { color: var(--ink-soft); }
+label { font-size: 13px; color: var(--ink-soft); }
+.field { display: grid; gap: 4px; margin-bottom: 10px; }
+input[type="text"], input[type="url"], input[type="search"], select, textarea {
+  width: 100%; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; font-size: 14px;
+}
+textarea { resize: vertical; min-height: 64px; }
+input[type="color"] { width: 36px; height: 32px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); cursor: pointer; }
+input[type="range"] { width: 100%; accent-color: var(--gold); }
+.btn { appearance: none; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 7px 12px; cursor: pointer; font-size: 14px; line-height: 1.2; }
+.btn:hover { border-color: var(--gold); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+.btn.small { padding: 4px 8px; font-size: 13px; }
+.btn.icon { padding: 4px 8px; min-width: 32px; }
+.btn[aria-pressed="true"] { background: var(--surface-2); border-color: var(--gold); font-weight: 700; }
+.btn:disabled { opacity: .45; cursor: default; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.row > .grow { flex: 1 1 160px; min-width: 0; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.muted { color: var(--muted); }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Email surface: emails stay white in both themes */
+.mail-surface { background: #FFFFFF; color: #1A1A1A; border: 1px solid var(--line); border-radius: 10px; padding: 18px; overflow-x: auto; }
+.mail-surface .body-text { font-family: Arial, Helvetica, sans-serif; font-size: 14px; color: #333; margin: 0 0 18px; }
+.sig-empty { font-size: 13px; color: #8a8478; font-style: italic; }
+
+/* Design tab */
+.tpl-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.tpl-chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; cursor: pointer; font-size: 14px; }
+.tpl-chip[aria-pressed="true"] { border-color: var(--gold); background: var(--surface-2); font-weight: 600; }
+.tpl-chip .n { color: var(--muted); font-weight: 400; font-size: 12px; margin-left: 4px; }
+.design-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.preview-col { position: sticky; top: 12px; display: grid; gap: 12px; }
+.section-title { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 18px 0 8px; font-weight: 600; }
+.section-title:first-child { margin-top: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.chip { border: 1px dashed var(--gold); background: var(--surface); color: var(--ink-soft); border-radius: 6px; padding: 2px 8px; font-size: 12.5px; cursor: pointer; }
+.chip:hover { background: var(--surface-2); }
+.blocks { display: grid; gap: 8px; }
+.block { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.block.dragging { opacity: .4; }
+.block.drop-before { box-shadow: 0 -3px 0 0 var(--gold); }
+.block.drop-after { box-shadow: 0 3px 0 0 var(--gold); }
+.block-head { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-bottom: 1px solid var(--line); background: var(--surface-2); border-radius: 10px 10px 0 0; }
+.grip { cursor: grab; color: var(--muted); padding: 0 4px; user-select: none; font-size: 16px; line-height: 1; touch-action: none; }
+.block-type { font-size: 13px; font-weight: 600; }
+.block-head .spacer { flex: 1; }
+.block-body { padding: 10px; display: grid; gap: 8px; }
+.link-item { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto auto auto; gap: 6px; align-items: center; }
+.add-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.logo-thumb { width: 44px; height: 44px; border-radius: 8px; border: 1px solid var(--line); background: #fff center/contain no-repeat; flex: none; }
+
+/* People tab */
+.people-top { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px; margin-bottom: 16px; align-items: start; }
+.rule-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 220px); gap: 8px; align-items: center; padding: 7px 0; border-top: 1px solid var(--line); }
+.rule-row:first-of-type { border-top: 0; }
+.rule-row .what { font-size: 14px; }
+.rule-row .what small { display: block; color: var(--muted); font-size: 12px; }
+.order { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 12.5px; color: var(--muted); margin: 0 0 10px; }
+.order span.step { background: var(--surface-2); border-radius: 999px; padding: 2px 9px; color: var(--ink-soft); }
+.person { border-top: 1px solid var(--line); }
+.person:first-child { border-top: 0; }
+.person-row { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 4px; }
+.who b { display: block; }
+.who small { color: var(--muted); display: block; overflow-wrap: anywhere; }
+.assign b { font-size: 14px; display: block; }
+.assign small { font-size: 12px; color: var(--muted); display: block; }
+.assign .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.tag { display: inline-block; font-size: 11px; border-radius: 999px; padding: 1px 8px; background: var(--surface-2); color: var(--ink-soft); margin-left: 6px; vertical-align: 1px; }
+.tag.new { background: var(--ok-bg); color: var(--ok); }
+.person-detail { padding: 4px 4px 16px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 16px; }
+.status { font-size: 13px; color: var(--ok); background: var(--ok-bg); border-radius: 8px; padding: 6px 10px; margin-top: 10px; }
+.status[hidden] { display: none; }
+.spin { display: inline-block; width: 12px; height: 12px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -1px; margin-right: 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Compose tab */
+.compose-grid { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); grid-template-areas: "controls mail" "log mail"; grid-template-rows: auto 1fr; gap: 16px; align-items: start; }
+.c-controls { grid-area: controls; }
+.c-mail { grid-area: mail; }
+.c-log { grid-area: log; }
+.log { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.log li { font-size: 13.5px; padding: 6px 8px 6px 28px; border-radius: 8px; background: var(--surface-2); position: relative; animation: rise .25s ease-out; }
+.log li::before { content: ""; position: absolute; left: 10px; top: 12px; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); }
+.log li.done::before { background: var(--ok); }
+@keyframes rise { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.mailwin { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); box-shadow: var(--shadow); }
+.mailbar { display: flex; gap: 8px; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--line); background: var(--surface-2); flex-wrap: wrap; }
+.mailbar .title { font-weight: 600; font-size: 14px; margin-right: auto; }
+.mailfields { padding: 4px 14px; border-bottom: 1px solid var(--line); }
+.mailfield { display: grid; grid-template-columns: 70px minmax(0, 1fr); align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.mailfield:last-child { border-bottom: 0; }
+.mailfield span { color: var(--muted); }
+.mailfield input, .mailfield select { border-color: transparent; background: transparent; padding: 4px 6px; }
+.mailfield input:focus, .mailfield select:focus { border-color: var(--line); }
+.mailbody { background: #FFFFFF; color: #1A1A1A; padding: 18px; min-height: 340px; outline: none; font-family: Arial, Helvetica, sans-serif; font-size: 14px; overflow-x: auto; }
+.mailbody .typing { min-height: 44px; color: #333; }
+.mailbody .quoted { border-top: 1px solid #ddd; margin-top: 16px; padding-top: 10px; color: #555; font-size: 13px; }
+.sig-slot { border-radius: 6px; transition: background-color .6s ease; }
+.sig-slot.flash { background-color: #FBF3DF; }
+.empty-compose { padding: 48px 20px; text-align: center; color: var(--muted); }
+.toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: 14px; box-shadow: var(--shadow); z-index: 10; max-width: calc(100% - 32px); }
+.toast[hidden] { display: none; }
+
+/* How it works */
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; counter-reset: s; }
+.step-card { position: relative; padding-top: 44px; }
+.step-card::before { counter-increment: s; content: counter(s); position: absolute; top: 14px; left: 16px; width: 24px; height: 24px; border-radius: 50%; background: var(--surface-2); color: var(--accent); font-weight: 700; font-size: 13px; display: grid; place-items: center; }
+.step-card h3 { margin: 0 0 6px; font-size: 15px; }
+.step-card p { margin: 0; color: var(--ink-soft); font-size: 14px; }
+.how-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
+.how-grid ul { margin: 0; padding-left: 18px; color: var(--ink-soft); font-size: 14px; }
+.how-grid li { margin: 4px 0; }
+.links-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+footer { border-top: 1px solid var(--line); padding: 18px 0 28px; color: var(--muted); font-size: 13px; }
+footer .wrap { display: flex; gap: 12px; flex-wrap: wrap; justify-content: space-between; }
+
+@media (max-width: 980px) {
+  .design-grid, .people-top, .compose-grid { grid-template-columns: minmax(0, 1fr); }
+  .compose-grid { grid-template-areas: "controls" "mail" "log"; grid-template-rows: auto; }
+  .preview-col { position: static; order: -1; }
+  .steps, .how-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .person-detail { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  body { font-size: 14.5px; }
+  .top .by { display: none; }
+  .steps, .how-grid, .grid2 { grid-template-columns: minmax(0, 1fr); }
+  .person-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .person-row .assign { grid-column: 1 / -1; }
+  .person-row .assign + .assign { margin-top: -6px; }
+  .rule-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .link-item { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .link-item .addr { grid-column: 1 / -1; grid-row: 2; }
+  .mailbody { padding: 14px; }
+  .mail-surface { padding: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="wordmark" href="#design" aria-label="Cachet">Cachet<span class="dot">.</span></a>
+    <span class="badge">Interactive demo</span>
+    <span class="spacer"></span>
+    <span class="by">By Alyssa I. Agard</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>Email signatures, managed in one place.</h1>
+    <p>Design an organization's email signatures once. Cachet fills in each person's details from Microsoft 365 and inserts the right signature automatically whenever anyone writes in Outlook.</p>
+    <p class="sim-note">A working simulation with a fictional organization and sample people. No sign-in is required, and nothing leaves your browser.</p>
+  </section>
+
+  <nav class="tabs" role="tablist" aria-label="Demo sections">
+    <button class="tab" role="tab" id="tab-design" aria-controls="panel-design" data-tab="design">1. Design a signature</button>
+    <button class="tab" role="tab" id="tab-people" aria-controls="panel-people" data-tab="people">2. Choose who gets it</button>
+    <button class="tab" role="tab" id="tab-compose" aria-controls="panel-compose" data-tab="compose">3. Write an email</button>
+    <button class="tab" role="tab" id="tab-how" aria-controls="panel-how" data-tab="how">How it works</button>
+  </nav>
+
+  <!-- Design -->
+  <section class="panel" role="tabpanel" id="panel-design" aria-labelledby="tab-design">
+    <div class="tpl-bar" id="tplBar"></div>
+    <div class="design-grid">
+      <div class="card" id="editor"></div>
+      <div class="preview-col">
+        <div class="card">
+          <div class="row" style="margin-bottom:10px">
+            <h2 class="grow" style="margin:0">Preview</h2>
+            <label for="previewAs" class="visually-hidden">Preview as</label>
+            <select id="previewAs" style="width:auto;max-width:100%"></select>
+          </div>
+          <div class="mail-surface">
+            <p class="body-text">Thank you for your time today. I have attached the summary we discussed.</p>
+            <div id="designPreview"></div>
+          </div>
+          <p class="tip" style="margin:12px 0 0"><strong>Try this:</strong> preview as Daniel Okafor. He has no phone numbers or booking link, so those parts disappear, separators included.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- People -->
+  <section class="panel" role="tabpanel" id="panel-people" aria-labelledby="tab-people" hidden>
+    <div class="people-top">
+      <div class="card">
+        <h2>Who gets which signature</h2>
+        <p>Cachet checks these in order, and the first that applies wins.</p>
+        <div class="order"><span class="step">Their own setting</span>&rarr;<span class="step">Their groups</span>&rarr;<span class="step">Their email domain</span>&rarr;<span class="step">Organization default</span></div>
+        <div id="rules"></div>
+      </div>
+      <div class="card">
+        <h2>Microsoft 365 directory</h2>
+        <p>Names, titles, phone numbers, groups, and shared mailboxes sync from Microsoft 365 through read-only access an administrator approves once.</p>
+        <button class="btn primary" id="syncBtn" type="button">Sync now</button>
+        <div class="status" id="syncStatus" hidden></div>
+        <h3>Organization details</h3>
+        <div class="field"><label for="orgName">Organization name, used as {{organization}}</label><input type="text" id="orgName"></div>
+        <div class="field"><label for="orgSite">Website, used as {{website}}</label><input type="text" id="orgSite"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:6px">
+        <h2 class="grow" style="margin:0">People and shared mailboxes</h2>
+        <span class="muted" id="peopleCount" style="font-size:13px"></span>
+      </div>
+      <p class="sub">Open anyone to set their signature, override a directory detail, or view both of their signatures.</p>
+      <div id="people"></div>
+    </div>
+  </section>
+
+  <!-- Compose -->
+  <section class="panel" role="tabpanel" id="panel-compose" aria-labelledby="tab-compose" hidden>
+    <div class="compose-grid">
+      <div class="card c-controls">
+        <h2>Write as someone</h2>
+        <div class="field" style="margin-top:10px"><label for="composeAs">Signed in as</label><select id="composeAs"></select></div>
+        <div class="row">
+          <button class="btn primary" type="button" data-compose="new">New message</button>
+          <button class="btn" type="button" data-compose="reply">Reply</button>
+          <button class="btn" type="button" data-compose="forward">Forward</button>
+        </div>
+        <p class="tip" style="margin:12px 0 0"><strong>Try this:</strong> start a message, then change the From address to the Press Office shared mailbox. Cachet swaps in that mailbox's signature.</p>
+      </div>
+      <div class="mailwin c-mail" id="mailwin"></div>
+      <div class="card c-log">
+        <h2>What happened</h2>
+        <ol class="log" id="log" aria-live="polite" style="margin-top:10px"><li class="muted" style="background:none;padding-left:0;animation:none">Start a message to see each step.</li></ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="panel" role="tabpanel" id="panel-how" aria-labelledby="tab-how" hidden>
+    <div class="steps">
+      <div class="card step-card"><h3>An administrator designs templates</h3><p>Text, links, icons, a logo, and a legal disclaimer, built in Cachet's editor with a live preview. Placeholders such as {{title}} fill in for each person.</p></div>
+      <div class="card step-card"><h3>Microsoft 365 provides the details</h3><p>Cachet reads people, titles, phone numbers, groups, and shared mailboxes from the directory with read-only permission, on demand or nightly.</p></div>
+      <div class="card step-card"><h3>Someone starts an email</h3><p>Outlook starts Cachet's add-in automatically for new messages, replies, forwards, and meeting invitations, and when the From address changes.</p></div>
+      <div class="card step-card"><h3>Cachet confirms who is asking</h3><p>The add-in sends a Microsoft-issued sign-in token. Cachet checks that it is genuine, unexpired, meant for Cachet, and from an organization it serves.</p></div>
+      <div class="card step-card"><h3>Cachet picks and fills the template</h3><p>It checks the person's own setting, groups, domain, and organization default in order, fills in their details, and drops anything empty.</p></div>
+      <div class="card step-card"><h3>The signature appears</h3><p>The add-in inserts email-safe HTML that displays consistently across mail programs, in Outlook on the web, Windows, Mac, iPhone, and Android.</p></div>
+    </div>
+    <div class="how-grid">
+      <div class="card">
+        <h2>A safety net on the server</h2>
+        <p style="color:var(--ink-soft);font-size:14px;margin:6px 0 0">Generated Exchange mail rules sign any message the add-in missed. They skip messages already signed and apply only to mail sent from inside the organization, so forged outside mail never receives a real signature.</p>
+      </div>
+      <div class="card">
+        <h2>Security by design</h2>
+        <ul>
+          <li>Every record belongs to one organization, and each request is limited to it.</li>
+          <li>Each site serves only the Microsoft 365 organizations it lists.</li>
+          <li>Links are limited to web, email, and phone addresses, and all template content is validated on save.</li>
+          <li>Cachet never holds Exchange administrator rights.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Built with</h2>
+        <ul>
+          <li>Next.js and React for the admin site</li>
+          <li>PostgreSQL for the data</li>
+          <li>Microsoft Entra ID and Microsoft Graph for sign-in and the directory</li>
+          <li>The Office add-in platform for Outlook</li>
+          <li>Azure Container Apps for hosting</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h2>About this demo</h2>
+      <p style="color:var(--ink-soft);font-size:14px;margin:6px 0 0">Cachet runs in production at Agard Research Associates Inc. Because visitors cannot sign in to that organization, this page recreates the experience in the browser with a fictional one. The real application stores templates in a database, verifies every request, and runs inside Outlook. I designed and developed Cachet.</p>
+      <div class="links-row">
+        <a class="btn" id="linkMethod" href="#">How I built it</a>
+        <a class="btn" id="linkRepo" href="#">Project repository</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Cachet. Designed and developed by Alyssa I. Agard.</span>
+    <span>Copyright &copy; 2026 Alyssa I. Agard. All rights reserved. Sample data only.</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(() => {
+  "use strict";
+
+  // Where the write-up lives. Update if the repository is renamed.
+  const REPO_URL = "https://github.com/alyssaagard/cachet-showcase";
+
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  let uidN = 0;
+  const uid = () => "b" + (++uidN);
+
+  // ---------- Sample artwork (drawn here, fictional organization) ----------
+  const svgData = (w, h, inner) => "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${inner}</svg>`);
+  const MARK = `<rect width="160" height="160" rx="30" fill="#1F3A5F"/><path d="M40 116V46h15l25 34 25-34h15v70h-15V72l-25 33-25-33v44z" fill="#F4EFE6"/><circle cx="124" cy="116" r="7" fill="#C9A86A"/>`;
+  const LOGOS = {
+    mark: { label: "Square mark", src: svgData(160, 160, MARK) },
+    lockup: {
+      label: "Wide logo",
+      src: svgData(520, 120, `<g transform="translate(0,0) scale(.75)">${MARK}</g><text x="140" y="58" font-family="Georgia, serif" font-size="40" fill="#1F3A5F">Meridian</text><text x="141" y="92" font-family="Arial, sans-serif" font-size="19" letter-spacing="4" fill="#7A6A4F">POLICY INSTITUTE</text>`)
+    }
+  };
+  const iconSvg = (inner) => svgData(24, 24, inner);
+  const ICONS = {
+    calendar: { label: "Calendar", draw: (c) => iconSvg(`<rect x="3" y="5" width="18" height="16" rx="2.5" fill="none" stroke="${c}" stroke-width="2"/><path d="M3 10h18M8 3v4M16 3v4" stroke="${c}" stroke-width="2" stroke-linecap="round"/>`) },
+    globe: { label: "Globe", draw: (c) => iconSvg(`<circle cx="12" cy="12" r="9" fill="none" stroke="${c}" stroke-width="2"/><path d="M3 12h18M12 3c3.2 3.6 3.2 14.4 0 18M12 3c-3.2 3.6-3.2 14.4 0 18" fill="none" stroke="${c}" stroke-width="1.8"/>`) },
+    profile: { label: "Profile", draw: (c) => iconSvg(`<rect x="2.5" y="2.5" width="19" height="19" rx="4.5" fill="${c}"/><circle cx="12" cy="10" r="3.3" fill="#fff"/><path d="M6.3 18.2c1.1-3 3.2-4.5 5.7-4.5s4.6 1.5 5.7 4.5" fill="#fff"/>`) },
+    chat: { label: "Video call", draw: (c) => iconSvg(`<rect x="2.5" y="6" width="13" height="12" rx="2.5" fill="none" stroke="${c}" stroke-width="2"/><path d="M15.5 10.5l6-3.5v10l-6-3.5z" fill="${c}"/>`) },
+    phone: { label: "Phone", draw: (c) => iconSvg(`<path d="M6.6 3.5l3 3.2-1.8 2.4c1.2 2.5 3 4.3 5.6 5.6l2.4-1.8 3.2 3-1.7 3.1C11 19 5 13 3.5 5.2z" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round"/>`) },
+    mail: { label: "Email", draw: (c) => iconSvg(`<rect x="3" y="5.5" width="18" height="13" rx="2" fill="none" stroke="${c}" stroke-width="2"/><path d="M3.5 7l8.5 6.5L20.5 7" fill="none" stroke="${c}" stroke-width="2"/>`) }
+  };
+
+  // ---------- Data ----------
+  const FONTS = {
+    "Arial": "Arial, Helvetica, sans-serif",
+    "Calibri": "Calibri, Carlito, Arial, sans-serif",
+    "Georgia": "Georgia, 'Times New Roman', serif",
+    "Garamond": "Garamond, 'EB Garamond', Georgia, serif",
+    "Tahoma": "Tahoma, Verdana, sans-serif",
+    "Trebuchet MS": "'Trebuchet MS', Arial, sans-serif",
+    "Verdana": "Verdana, Geneva, sans-serif",
+    "Times New Roman": "'Times New Roman', Times, serif"
+  };
+  const DETAILS = [
+    ["name", "Full name"], ["firstname", "First name"], ["title", "Job title"], ["department", "Department"],
+    ["phone", "Office phone"], ["mobile", "Mobile"], ["email", "Email"], ["organization", "Organization"],
+    ["website", "Website"], ["booking_link", "Booking link"], ["linkedin", "LinkedIn"]
+  ];
+
+  const state = {
+    org: { name: "Meridian Policy Institute", website: "www.meridian.example" },
+    people: [
+      { id: "p1", name: "Jordan Ellis", title: "Executive Director", department: "Leadership", phone: "+1 (555) 010-2001", mobile: "+1 (555) 010-3001", email: "jordan.ellis@meridian.example", domain: "meridian.example", groups: ["Leadership"], booking_link: "https://bookings.meridian.example/jordan-ellis", linkedin: "https://profiles.example/jordan-ellis" },
+      { id: "p2", name: "Priya Raman", title: "Senior Policy Analyst", department: "Research", phone: "+1 (555) 010-2002", mobile: "", email: "priya.raman@meridian.example", domain: "meridian.example", groups: ["Research"], booking_link: "https://bookings.meridian.example/priya-raman", linkedin: "https://profiles.example/priya-raman" },
+      { id: "p3", name: "Marcus Bell", title: "Communications Manager", department: "Communications", phone: "", mobile: "+1 (555) 010-3003", email: "marcus.bell@meridian.example", domain: "meridian.example", groups: ["Communications"], booking_link: "", linkedin: "https://profiles.example/marcus-bell" },
+      { id: "p4", name: "Elena Sokolova", title: "Visiting Fellow", department: "Fellows Program", phone: "+1 (555) 010-2004", mobile: "", email: "elena.sokolova@fellows.meridian.example", domain: "fellows.meridian.example", groups: ["Fellows"], booking_link: "", linkedin: "" },
+      { id: "p5", name: "Daniel Okafor", title: "Research Assistant", department: "Research", phone: "", mobile: "", email: "daniel.okafor@meridian.example", domain: "meridian.example", groups: ["Research"], booking_link: "", linkedin: "" },
+      { id: "m1", name: "Press Office", title: "Media inquiries", department: "Communications", phone: "+1 (555) 010-2100", mobile: "", email: "press@meridian.example", domain: "meridian.example", groups: [], booking_link: "", linkedin: "", shared: true }
+    ],
+    newHire: { id: "p6", name: "Samira Haddad", title: "Program Coordinator", department: "Programs", phone: "+1 (555) 010-2006", mobile: "", email: "samira.haddad@meridian.example", domain: "meridian.example", groups: ["Programs"], booking_link: "", linkedin: "", isNew: true },
+    groups: ["Leadership", "Research", "Communications", "Fellows", "Programs"],
+    rules: {
+      orgNew: "standard",
+      orgReply: "compact",
+      domains: { "meridian.example": "", "fellows.meridian.example": "classic" },
+      groups: { Leadership: "", Research: "", Communications: "", Fellows: "", Programs: "" }
+    },
+    personal: { m1: { new: "press", reply: "" } },
+    overrides: {},
+    templates: [],
+    editing: "standard",
+    previewAs: "p1",
+    openPerson: null,
+    synced: false
+  };
+
+  const SEP_COLOR = "#B8B0A2";
+
+  function makeTemplates() {
+    return [
+      {
+        id: "standard", name: "Standard", font: "Arial", size: 13, color: "#333333", linkColor: "#1F5C8C", accent: "#C9A86A",
+        logo: { src: LOGOS.mark.src, kind: "mark", width: 76, position: "left", rule: true, link: "https://www.meridian.example" },
+        blocks: [
+          { id: uid(), type: "text", text: "{{name}}", bold: true, italic: false, size: 16, color: "#1F3A5F" },
+          { id: uid(), type: "text", text: "{{title}} | {{department}}", bold: false, italic: false, size: 13, color: "#4A4A4A" },
+          { id: uid(), type: "text", text: "{{organization}}", bold: true, italic: false, size: 13, color: "#333333" },
+          { id: uid(), type: "space", height: 6 },
+          { id: uid(), type: "text", text: "Office {{phone}} | Mobile {{mobile}}", bold: false, italic: false, size: 12, color: "#4A4A4A" },
+          { id: uid(), type: "links", size: 12, items: [
+            { id: uid(), label: "{{email}}", url: "mailto:{{email}}", show: "text", icon: "mail" },
+            { id: uid(), label: "{{website}}", url: "{{website}}", show: "text", icon: "globe" }
+          ] },
+          { id: uid(), type: "links", size: 12, items: [
+            { id: uid(), label: "Book a meeting", url: "{{booking_link}}", show: "icon", icon: "calendar" },
+            { id: uid(), label: "LinkedIn", url: "{{linkedin}}", show: "icon", icon: "profile" }
+          ] }
+        ],
+        disclaimer: { enabled: true, text: "This email and its attachments are meant only for the people it is addressed to and may be confidential. If it reached you by mistake, please let the sender know and delete it.", linkLabel: "Privacy notice", linkUrl: "https://www.meridian.example/privacy" }
+      },
+      {
+        id: "compact", name: "Compact (replies)", font: "Arial", size: 12, color: "#333333", linkColor: "#1F5C8C", accent: "#C9A86A",
+        logo: { src: "", kind: "", width: 60, position: "left", rule: false, link: "" },
+        blocks: [
+          { id: uid(), type: "text", text: "{{name}} | {{title}}", bold: true, italic: false, size: 13, color: "#1F3A5F" },
+          { id: uid(), type: "text", text: "{{organization}} | {{phone}}", bold: false, italic: false, size: 12, color: "#4A4A4A" }
+        ],
+        disclaimer: { enabled: false, text: "", linkLabel: "", linkUrl: "" }
+      },
+      {
+        id: "classic", name: "Classic", font: "Georgia", size: 13, color: "#333333", linkColor: "#7A5C2E", accent: "#C9A86A",
+        logo: { src: LOGOS.lockup.src, kind: "lockup", width: 190, position: "top", rule: false, link: "https://www.meridian.example" },
+        blocks: [
+          { id: uid(), type: "text", text: "{{name}}", bold: false, italic: true, size: 18, color: "#1F3A5F" },
+          { id: uid(), type: "text", text: "{{title}}, {{department}}", bold: false, italic: false, size: 13, color: "#4A4A4A" },
+          { id: uid(), type: "divider", color: "#C9A86A" },
+          { id: uid(), type: "text", text: "T {{phone}} | M {{mobile}}", bold: false, italic: false, size: 12, color: "#4A4A4A" },
+          { id: uid(), type: "links", size: 12, items: [
+            { id: uid(), label: "{{email}}", url: "mailto:{{email}}", show: "text", icon: "mail" },
+            { id: uid(), label: "{{website}}", url: "{{website}}", show: "text", icon: "globe" }
+          ] }
+        ],
+        disclaimer: { enabled: true, text: "Confidential: intended only for the named recipients.", linkLabel: "", linkUrl: "" }
+      },
+      {
+        id: "press", name: "Press Office", font: "Arial", size: 13, color: "#333333", linkColor: "#1F5C8C", accent: "#C9A86A",
+        logo: { src: LOGOS.mark.src, kind: "mark", width: 56, position: "left", rule: true, link: "" },
+        blocks: [
+          { id: uid(), type: "text", text: "{{name}} | {{organization}}", bold: true, italic: false, size: 14, color: "#1F3A5F" },
+          { id: uid(), type: "text", text: "{{title}}: {{phone}}", bold: false, italic: false, size: 12, color: "#4A4A4A" },
+          { id: uid(), type: "links", size: 12, items: [
+            { id: uid(), label: "{{email}}", url: "mailto:{{email}}", show: "text", icon: "mail" },
+            { id: uid(), label: "Newsroom", url: "https://www.meridian.example/news", show: "text", icon: "globe" }
+          ] }
+        ],
+        disclaimer: { enabled: false, text: "", linkLabel: "", linkUrl: "" }
+      }
+    ];
+  }
+  state.templates = makeTemplates();
+
+  const tpl = (id) => state.templates.find((t) => t.id === id) || null;
+  const person = (id) => state.people.find((p) => p.id === id) || null;
+  const firstName = (n) => (n || "").trim().split(/\s+/)[0] || "";
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+
+  // ---------- Filling in details ----------
+  function valueOf(p, key) {
+    if (key === "organization") return state.org.name;
+    if (key === "website") return state.org.website;
+    if (!p) return "";
+    const o = state.overrides[p.id] || {};
+    if (key === "firstname") return firstName(o.name != null ? o.name : p.name);
+    if (o[key] != null) return o[key];
+    return p[key] || "";
+  }
+  // Fills one piece of text. Reports whether any detail it used was empty.
+  function fill(text, p) {
+    let empty = false;
+    const out = String(text || "").replace(/\{\{\s*([a-z_]+)\s*\}\}/gi, (_, k) => {
+      const v = valueOf(p, k.toLowerCase());
+      if (!v) empty = true;
+      return v;
+    });
+    return { text: out.trim(), empty };
+  }
+  // A line is split at "|". A part whose detail is empty disappears, with its separator.
+  function lineParts(text, p) {
+    return String(text || "").split("|").map((s) => fill(s, p)).filter((r) => !r.empty && r.text).map((r) => r.text);
+  }
+  function safeUrl(u) {
+    u = String(u || "").trim();
+    if (!u) return "";
+    if (/^tel:/i.test(u)) { const n = u.slice(4).replace(/[^\d+]/g, ""); return n ? "tel:" + n : ""; }
+    if (/^mailto:/i.test(u)) return /^mailto:[^\s@]+@[^\s@]+$/i.test(u) ? u : "";
+    if (/^https?:\/\/[^\s]+$/i.test(u)) return u;
+    if (/^(www\.)?[a-z0-9-]+(\.[a-z0-9-]+)+(\/[^\s]*)?$/i.test(u)) return "https://" + u;
+    return "";
+  }
+
+  // ---------- Email-safe rendering (tables and inline styles only) ----------
+  function renderSignature(t, p) {
+    if (!t) return "";
+    const ff = FONTS[t.font] || FONTS.Arial;
+    const sep = `<span style="color:${SEP_COLOR};">&nbsp;&nbsp;|&nbsp;&nbsp;</span>`;
+    const rows = [];
+    const cell = (style, html) => `<tr><td style="font-family:${ff};${style}">${html}</td></tr>`;
+    for (const b of t.blocks) {
+      if (b.type === "text") {
+        const parts = lineParts(b.text, p);
+        if (!parts.length) continue;
+        rows.push(cell(`font-size:${b.size || t.size}px;line-height:1.4;color:${b.color || t.color};font-weight:${b.bold ? 700 : 400};font-style:${b.italic ? "italic" : "normal"};padding:0 0 2px 0;`, parts.map(esc).join(sep)));
+      } else if (b.type === "links") {
+        const items = [];
+        for (const it of b.items) {
+          const u = fill(it.url, p);
+          if (u.empty) continue;
+          const href = safeUrl(u.text);
+          if (!href) continue;
+          const lab = fill(it.label, p);
+          const label = lab.empty || !lab.text ? u.text.replace(/^(https?:\/\/|mailto:|tel:)/i, "") : lab.text;
+          if (it.show === "icon" && ICONS[it.icon]) {
+            items.push({ icon: true, html: `<a href="${esc(href)}" style="text-decoration:none;" title="${esc(label)}"><img src="${ICONS[it.icon].draw(t.linkColor)}" width="20" height="20" alt="${esc(label)}" style="display:inline-block;border:0;width:20px;height:20px;vertical-align:middle;"></a>` });
+          } else {
+            items.push({ icon: false, html: `<a href="${esc(href)}" style="color:${t.linkColor};text-decoration:none;">${esc(label)}</a>` });
+          }
+        }
+        if (!items.length) continue;
+        const html = items.map((x, i) => (i === 0 ? "" : (x.icon && items[i - 1].icon ? "&nbsp;&nbsp;" : sep)) + x.html).join("");
+        rows.push(cell(`font-size:${b.size || t.size}px;line-height:1.5;color:${t.color};padding:2px 0 2px 0;`, html));
+      } else if (b.type === "paragraph") {
+        const f = fill(b.text, p);
+        if (!f.text) continue;
+        rows.push(cell(`font-size:${b.size || 11}px;line-height:1.45;color:${b.color || "#6b6b6b"};font-style:${b.italic ? "italic" : "normal"};padding:4px 0;`, esc(f.text).replace(/\n/g, "<br>")));
+      } else if (b.type === "divider") {
+        rows.push(`<tr><td style="padding:6px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;"><tr><td style="border-top:1px solid ${b.color || t.accent};font-size:0;line-height:0;height:1px;">&nbsp;</td></tr></table></td></tr>`);
+      } else if (b.type === "space") {
+        const h = Math.max(2, Math.min(32, Number(b.height) || 8));
+        rows.push(`<tr><td style="height:${h}px;line-height:${h}px;font-size:0;">&nbsp;</td></tr>`);
+      }
+    }
+    const lines = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">${rows.join("")}</table>`;
+    let main = lines;
+    if (t.logo && t.logo.src) {
+      const w = Math.round(Number(t.logo.width) || 80);
+      let img = `<img src="${esc(t.logo.src)}" width="${w}" alt="${esc(state.org.name)}" style="display:block;border:0;width:${w}px;height:auto;">`;
+      const lh = safeUrl(t.logo.link);
+      if (lh) img = `<a href="${esc(lh)}">${img}</a>`;
+      if (t.logo.position === "top") {
+        main = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td style="padding:0 0 10px 0;">${img}</td></tr><tr><td>${lines}</td></tr></table>`;
+      } else {
+        const rule = t.logo.rule ? `border-left:2px solid ${t.accent};padding-left:14px;` : "padding-left:2px;";
+        main = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td valign="top" style="vertical-align:top;padding:2px 14px 0 0;">${img}</td><td valign="top" style="vertical-align:top;${rule}">${lines}</td></tr></table>`;
+      }
+    }
+    let disc = "";
+    const d = t.disclaimer || {};
+    if (d.enabled) {
+      const text = fill(d.text, p).text;
+      const lu = safeUrl(fill(d.linkUrl, p).text);
+      const link = lu ? ` <a href="${esc(lu)}" style="color:${t.linkColor};">${esc(d.linkLabel || lu)}</a>` : "";
+      if (text || link) {
+        disc = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-top:12px;max-width:560px;"><tr><td style="font-family:${ff};font-size:10.5px;line-height:1.45;color:#7a7a7a;">${esc(text)}${link}</td></tr></table>`;
+      }
+    }
+    return main + disc;
+  }
+
+  // ---------- Who gets which signature ----------
+  function tplName(id) { const t = tpl(id); return t ? t.name : "No signature"; }
+  function resolve(p, kind) {
+    const mine = (state.personal[p.id] || {})[kind];
+    if (mine) return mine === "none" ? { id: null, why: "Their own setting: no signature" } : { id: mine, why: "Their own setting" };
+    if (kind === "reply") {
+      if (state.rules.orgReply === "none") return { id: null, why: "Organization setting for replies" };
+      if (state.rules.orgReply !== "same") return { id: state.rules.orgReply, why: "Organization default for replies" };
+      const r = resolve(p, "new");
+      return { id: r.id, why: "Same as new messages" };
+    }
+    for (const g of state.groups) {
+      const v = state.rules.groups[g];
+      if (v && p.groups.includes(g)) return v === "none" ? { id: null, why: `Group: ${g}` } : { id: v, why: `Group: ${g}` };
+    }
+    const d = state.rules.domains[p.domain];
+    if (d) return d === "none" ? { id: null, why: `Domain: ${p.domain}` } : { id: d, why: `Domain default: ${p.domain}` };
+    const o = state.rules.orgNew;
+    return o === "none" || !tpl(o) ? { id: null, why: "Organization default" } : { id: o, why: "Organization default" };
+  }
+  const usedBy = (id) => state.people.filter((p) => resolve(p, "new").id === id || resolve(p, "reply").id === id).length;
+
+  // ---------- Tabs ----------
+  const TABS = ["design", "people", "compose", "how"];
+  function showTab(name, focus) {
+    if (!TABS.includes(name)) name = "design";
+    for (const t of TABS) {
+      const btn = $("#tab-" + t), panel = $("#panel-" + t);
+      const on = t === name;
+      btn.setAttribute("aria-selected", on ? "true" : "false");
+      btn.tabIndex = on ? 0 : -1;
+      panel.hidden = !on;
+    }
+    const active = $("#tab-" + name), bar = $(".tabs");
+    if (active && bar.scrollWidth > bar.clientWidth) bar.scrollLeft = Math.max(0, active.offsetLeft - 16);
+    if (name === "people") renderPeople();
+    if (name === "compose") renderComposeAs();
+    if (focus) $("#tab-" + name).focus();
+  }
+  $$(".tab").forEach((b) => b.addEventListener("click", () => {
+    const name = b.dataset.tab;
+    try { history.replaceState(null, "", "#" + name); } catch (e) { /* preview frames may block this */ }
+    showTab(name);
+  }));
+  $(".tabs").addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    const cur = TABS.findIndex((t) => $("#tab-" + t).getAttribute("aria-selected") === "true");
+    const next = TABS[(cur + (e.key === "ArrowRight" ? 1 : TABS.length - 1)) % TABS.length];
+    showTab(next, true);
+  });
+
+  let toastTimer = null;
+  function toast(msg) {
+    const t = $("#toast");
+    t.textContent = msg;
+    t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.hidden = true; }, 2600);
+  }
+
+  // ---------- Design tab ----------
+  function optionList(items, selected) {
+    return items.map(([v, l]) => `<option value="${esc(v)}"${String(v) === String(selected) ? " selected" : ""}>${esc(l)}</option>`).join("");
+  }
+  function renderTplBar() {
+    const bar = $("#tplBar");
+    bar.innerHTML = state.templates.map((t) =>
+      `<button type="button" class="tpl-chip" data-act="select-tpl" data-id="${t.id}" aria-pressed="${t.id === state.editing}">${esc(t.name)}<span class="n">${usedBy(t.id)} using</span></button>`
+    ).join("") + `<span style="flex:1"></span><button type="button" class="btn small" data-act="new-tpl">New template</button><button type="button" class="btn small" data-act="dup-tpl">Duplicate</button><button type="button" class="btn small" data-act="del-tpl"${state.templates.length <= 1 ? " disabled" : ""}>Delete</button>`;
+  }
+  function renderPreviewAs() {
+    const sel = $("#previewAs");
+    sel.innerHTML = state.people.map((p) => `<option value="${p.id}"${p.id === state.previewAs ? " selected" : ""}>Preview as ${esc(valueOf(p, "name"))}</option>`).join("");
+  }
+  function renderDesignPreview() {
+    const t = tpl(state.editing);
+    const html = renderSignature(t, person(state.previewAs));
+    $("#designPreview").innerHTML = html || `<p class="sig-empty">This signature is empty for this person.</p>`;
+  }
+
+  const BLOCK_LABEL = { text: "Text line", links: "Links", paragraph: "Paragraph", divider: "Divider", space: "Space" };
+  const sizes = (from, to) => Array.from({ length: to - from + 1 }, (_, i) => [from + i, (from + i) + " px"]);
+
+  function blockBody(b) {
+    if (b.type === "text") {
+      return `
+        <input type="text" data-b="${b.id}" data-f="text" data-detail value="${esc(b.text)}" aria-label="Line text">
+        <div class="row">
+          <button type="button" class="btn icon small" data-act="toggle" data-b="${b.id}" data-f="bold" aria-pressed="${!!b.bold}" aria-label="Bold"><b>B</b></button>
+          <button type="button" class="btn icon small" data-act="toggle" data-b="${b.id}" data-f="italic" aria-pressed="${!!b.italic}" aria-label="Italic"><i>I</i></button>
+          <select data-b="${b.id}" data-f="size" aria-label="Text size" style="width:auto">${optionList(sizes(10, 22), b.size)}</select>
+          <input type="color" data-b="${b.id}" data-f="color" value="${esc(b.color)}" aria-label="Text color">
+        </div>`;
+    }
+    if (b.type === "links") {
+      return b.items.map((it) => `
+        <div class="link-item">
+          <input type="text" data-b="${b.id}" data-i="${it.id}" data-f="label" data-detail value="${esc(it.label)}" aria-label="Link text" placeholder="Text">
+          <input type="text" class="addr" data-b="${b.id}" data-i="${it.id}" data-f="url" data-detail value="${esc(it.url)}" aria-label="Link address" placeholder="Address or {{detail}}">
+          <select data-b="${b.id}" data-i="${it.id}" data-f="show" aria-label="Show as" style="width:auto">${optionList([["text", "Text"], ["icon", "Icon"]], it.show)}</select>
+          <select data-b="${b.id}" data-i="${it.id}" data-f="icon" aria-label="Icon" style="width:auto"${it.show === "icon" ? "" : " hidden"}>${optionList(Object.entries(ICONS).map(([k, v]) => [k, v.label]), it.icon)}</select>
+          <button type="button" class="btn icon small" data-act="del-item" data-b="${b.id}" data-i="${it.id}" aria-label="Remove link">&times;</button>
+        </div>`).join("") + `<div><button type="button" class="btn small" data-act="add-item" data-b="${b.id}">Add a link</button></div>`;
+    }
+    if (b.type === "paragraph") {
+      return `
+        <textarea data-b="${b.id}" data-f="text" data-detail aria-label="Paragraph text">${esc(b.text)}</textarea>
+        <div class="row">
+          <button type="button" class="btn icon small" data-act="toggle" data-b="${b.id}" data-f="italic" aria-pressed="${!!b.italic}" aria-label="Italic"><i>I</i></button>
+          <select data-b="${b.id}" data-f="size" aria-label="Text size" style="width:auto">${optionList(sizes(9, 14), b.size)}</select>
+          <input type="color" data-b="${b.id}" data-f="color" value="${esc(b.color)}" aria-label="Text color">
+        </div>`;
+    }
+    if (b.type === "divider") {
+      return `<div class="row"><label>Color <input type="color" data-b="${b.id}" data-f="color" value="${esc(b.color)}" style="vertical-align:middle"></label></div>`;
+    }
+    if (b.type === "space") {
+      return `<label>Height <span data-out="${b.id}">${b.height} px</span><input type="range" min="2" max="32" data-b="${b.id}" data-f="height" value="${b.height}"></label>`;
+    }
+    return "";
+  }
+
+  function renderEditor() {
+    const t = tpl(state.editing);
+    const ed = $("#editor");
+    if (!t) { ed.innerHTML = "<p>Choose a template.</p>"; return; }
+    const logoKinds = [["mark", LOGOS.mark.label], ["lockup", LOGOS.lockup.label]];
+    ed.innerHTML = `
+      <div class="field"><label for="tplName">Template name</label><input type="text" id="tplName" data-t="name" value="${esc(t.name)}"></div>
+
+      <div class="section-title">Style</div>
+      <div class="grid2">
+        <div class="field"><label for="tplFont">Font (email-safe)</label><select id="tplFont" data-t="font">${optionList(Object.keys(FONTS).map((f) => [f, f]), t.font)}</select></div>
+        <div class="field"><label for="tplSize">Base size</label><select id="tplSize" data-t="size">${optionList(sizes(10, 16), t.size)}</select></div>
+      </div>
+      <div class="row" style="gap:16px">
+        <label>Text <input type="color" data-t="color" value="${esc(t.color)}" style="vertical-align:middle"></label>
+        <label>Links <input type="color" data-t="linkColor" value="${esc(t.linkColor)}" style="vertical-align:middle"></label>
+        <label>Accent <input type="color" data-t="accent" value="${esc(t.accent)}" style="vertical-align:middle"></label>
+      </div>
+
+      <div class="section-title">Logo</div>
+      <div class="row">
+        <span class="logo-thumb" style="background-image:${t.logo.src ? `url('${t.logo.src.replace(/'/g, "%27")}')` : "none"}" aria-hidden="true"></span>
+        ${logoKinds.map(([k, l]) => `<button type="button" class="btn small" data-act="logo-sample" data-kind="${k}" aria-pressed="${t.logo.kind === k}">${l}</button>`).join("")}
+        <label class="btn small" style="cursor:pointer">Upload your own<input type="file" id="logoFile" accept="image/png,image/jpeg,image/gif,image/svg+xml,image/webp" class="visually-hidden"></label>
+        <button type="button" class="btn small" data-act="logo-remove"${t.logo.src ? "" : " disabled"}>Remove</button>
+      </div>
+      <div ${t.logo.src ? "" : "hidden"} style="margin-top:10px">
+        <label>Width <span id="logoWidthOut">${t.logo.width} px</span><input type="range" min="32" max="240" data-l="width" value="${t.logo.width}"></label>
+        <div class="row" style="margin-top:8px;gap:14px">
+          <label><input type="radio" name="logoPos" data-l="position" value="left"${t.logo.position === "left" ? " checked" : ""}> Beside the text</label>
+          <label><input type="radio" name="logoPos" data-l="position" value="top"${t.logo.position === "top" ? " checked" : ""}> Above the text</label>
+          <label${t.logo.position === "left" ? "" : " hidden"}><input type="checkbox" data-l="rule"${t.logo.rule ? " checked" : ""}> Accent line</label>
+        </div>
+        <div class="field" style="margin-top:8px"><label for="logoLink">Logo links to</label><input type="text" id="logoLink" data-l="link" value="${esc(t.logo.link)}" placeholder="www.example.org"></div>
+      </div>
+
+      <div class="section-title">Lines</div>
+      <p class="sub" style="margin-bottom:6px">Click a detail to insert it where your cursor is. Drag the handle, or use the arrows, to reorder.</p>
+      <div class="chips">${DETAILS.map(([k, l]) => `<button type="button" class="chip" data-act="insert" data-key="${k}" title="${esc(l)}">{{${k}}}</button>`).join("")}</div>
+      <div class="blocks" id="blocks">
+        ${t.blocks.map((b, i) => `
+          <div class="block" data-block="${b.id}">
+            <div class="block-head">
+              <span class="grip" data-grip title="Drag to reorder" aria-hidden="true">&#8942;&#8942;</span>
+              <span class="block-type">${BLOCK_LABEL[b.type]}</span>
+              <span class="spacer"></span>
+              <button type="button" class="btn icon small" data-act="up" data-b="${b.id}" aria-label="Move up"${i === 0 ? " disabled" : ""}>&uarr;</button>
+              <button type="button" class="btn icon small" data-act="down" data-b="${b.id}" aria-label="Move down"${i === t.blocks.length - 1 ? " disabled" : ""}>&darr;</button>
+              <button type="button" class="btn icon small" data-act="del-block" data-b="${b.id}" aria-label="Delete ${BLOCK_LABEL[b.type]}">&times;</button>
+            </div>
+            <div class="block-body">${blockBody(b)}</div>
+          </div>`).join("")}
+      </div>
+      <div class="add-row">
+        <button type="button" class="btn small" data-act="add-block" data-type="text">+ Text line</button>
+        <button type="button" class="btn small" data-act="add-block" data-type="links">+ Links</button>
+        <button type="button" class="btn small" data-act="add-block" data-type="paragraph">+ Paragraph</button>
+        <button type="button" class="btn small" data-act="add-block" data-type="divider">+ Divider</button>
+        <button type="button" class="btn small" data-act="add-block" data-type="space">+ Space</button>
+      </div>
+
+      <div class="section-title">Legal disclaimer</div>
+      <label><input type="checkbox" data-d="enabled"${t.disclaimer.enabled ? " checked" : ""}> Show a disclaimer below the signature</label>
+      <div ${t.disclaimer.enabled ? "" : "hidden"} style="margin-top:8px">
+        <div class="field"><label for="discText">Disclaimer text</label><textarea id="discText" data-d="text" data-detail>${esc(t.disclaimer.text)}</textarea></div>
+        <div class="grid2">
+          <div class="field"><label for="discLabel">Link text</label><input type="text" id="discLabel" data-d="linkLabel" value="${esc(t.disclaimer.linkLabel)}" placeholder="Privacy notice"></div>
+          <div class="field"><label for="discUrl">Link address</label><input type="text" id="discUrl" data-d="linkUrl" value="${esc(t.disclaimer.linkUrl)}" placeholder="www.example.org/privacy"></div>
+        </div>
+      </div>`;
+  }
+
+  function renderDesign() {
+    renderTplBar();
+    renderEditor();
+    renderPreviewAs();
+    renderDesignPreview();
+  }
+  function refreshAfterEdit() {
+    renderDesignPreview();
+    if (state.openPerson || !$("#panel-people").hidden) renderPeople();
+  }
+
+  const findBlock = (t, id) => t.blocks.find((b) => b.id === id);
+  let lastField = null;
+
+  $("#editor").addEventListener("focusin", (e) => {
+    if (e.target.matches("[data-detail]")) lastField = e.target;
+  });
+
+  $("#editor").addEventListener("input", (e) => {
+    const el = e.target, t = tpl(state.editing);
+    if (!t) return;
+    if (el.dataset.t) {
+      const k = el.dataset.t;
+      t[k] = k === "size" ? Number(el.value) : el.value;
+      if (k === "name") renderTplBar();
+    } else if (el.dataset.l) {
+      const k = el.dataset.l;
+      if (k === "width") { t.logo.width = Number(el.value); $("#logoWidthOut").textContent = el.value + " px"; }
+      else if (k === "rule") t.logo.rule = el.checked;
+      else if (k === "position") { t.logo.position = el.value; renderEditor(); }
+      else t.logo[k] = el.value;
+    } else if (el.dataset.d) {
+      const k = el.dataset.d;
+      if (k === "enabled") { t.disclaimer.enabled = el.checked; renderEditor(); }
+      else t.disclaimer[k] = el.value;
+    } else if (el.dataset.b) {
+      const b = findBlock(t, el.dataset.b);
+      if (!b) return;
+      const k = el.dataset.f;
+      if (el.dataset.i) {
+        const it = b.items.find((x) => x.id === el.dataset.i);
+        if (!it) return;
+        it[k] = el.value;
+        if (k === "show") { const ic = el.parentElement.querySelector('[data-f="icon"]'); if (ic) ic.hidden = el.value !== "icon"; }
+      } else {
+        b[k] = (k === "size" || k === "height") ? Number(el.value) : el.value;
+        if (k === "height") { const out = $(`[data-out="${b.id}"]`); if (out) out.textContent = el.value + " px"; }
+      }
+    } else {
+      return;
+    }
+    refreshAfterEdit();
+  });
+  $("#editor").addEventListener("change", (e) => {
+    if (e.target.id === "logoFile") readLogo(e.target.files && e.target.files[0]);
+  });
+
+  function readLogo(file) {
+    if (!file) return;
+    if (!/^image\/(png|jpeg|gif|svg\+xml|webp)$/.test(file.type)) { toast("Choose a PNG, JPEG, GIF, SVG, or WebP image."); return; }
+    if (file.size > 3 * 1024 * 1024) { toast("Choose an image under 3 MB."); return; }
+    const r = new FileReader();
+    r.onload = () => {
+      const t = tpl(state.editing);
+      t.logo.src = String(r.result);
+      t.logo.kind = "upload";
+      renderEditor();
+      refreshAfterEdit();
+      toast("Your image stays in this tab. The real Cachet stores logos privately and converts WebP and SVG to PNG for email.");
+    };
+    r.readAsDataURL(file);
+  }
+
+  function newBlock(type) {
+    if (type === "text") return { id: uid(), type, text: "{{title}}", bold: false, italic: false, size: 13, color: "#333333" };
+    if (type === "links") return { id: uid(), type, size: 12, items: [{ id: uid(), label: "Website", url: "{{website}}", show: "text", icon: "globe" }] };
+    if (type === "paragraph") return { id: uid(), type, text: "Write a short note here.", size: 11, color: "#6B6B6B", italic: false };
+    if (type === "divider") return { id: uid(), type, color: "#C9A86A" };
+    return { id: uid(), type: "space", height: 8 };
+  }
+
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest("[data-act]");
+    if (!a || a.disabled) return;
+    const act = a.dataset.act;
+    const t = tpl(state.editing);
+    switch (act) {
+      case "select-tpl":
+        state.editing = a.dataset.id;
+        renderTplBar(); renderEditor(); renderDesignPreview();
+        return;
+      case "new-tpl": {
+        const n = { id: "t" + Date.now(), name: "New template", font: "Arial", size: 13, color: "#333333", linkColor: "#1F5C8C", accent: "#C9A86A",
+          logo: { src: "", kind: "", width: 72, position: "left", rule: true, link: "" },
+          blocks: [newBlock("text"), newBlock("links")], disclaimer: { enabled: false, text: "", linkLabel: "", linkUrl: "" } };
+        n.blocks.unshift({ id: uid(), type: "text", text: "{{name}}", bold: true, italic: false, size: 15, color: "#1F3A5F" });
+        state.templates.push(n);
+        state.editing = n.id;
+        renderDesign();
+        $("#tplName").focus(); $("#tplName").select();
+        return;
+      }
+      case "dup-tpl": {
+        if (!t) return;
+        const c = clone(t);
+        c.id = "t" + Date.now();
+        c.name = t.name + " (copy)";
+        c.blocks.forEach((b) => { b.id = uid(); (b.items || []).forEach((it) => { it.id = uid(); }); });
+        state.templates.push(c);
+        state.editing = c.id;
+        renderDesign();
+        return;
+      }
+      case "del-tpl": {
+        if (!t || state.templates.length <= 1) return;
+        const id = t.id;
+        state.templates = state.templates.filter((x) => x.id !== id);
+        // People and rules that used it fall back to the next level, as in Cachet.
+        if (state.rules.orgNew === id) state.rules.orgNew = state.templates[0].id;
+        if (state.rules.orgReply === id) state.rules.orgReply = "same";
+        for (const k in state.rules.domains) if (state.rules.domains[k] === id) state.rules.domains[k] = "";
+        for (const k in state.rules.groups) if (state.rules.groups[k] === id) state.rules.groups[k] = "";
+        for (const k in state.personal) for (const kind of ["new", "reply"]) if (state.personal[k][kind] === id) state.personal[k][kind] = "";
+        state.editing = state.templates[0].id;
+        renderDesign();
+        toast("Deleted. Anyone who used it now gets the next signature in line.");
+        return;
+      }
+      case "toggle": {
+        const b = findBlock(t, a.dataset.b);
+        b[a.dataset.f] = !b[a.dataset.f];
+        a.setAttribute("aria-pressed", String(!!b[a.dataset.f]));
+        refreshAfterEdit();
+        return;
+      }
+      case "up": case "down": {
+        const i = t.blocks.findIndex((b) => b.id === a.dataset.b);
+        const j = act === "up" ? i - 1 : i + 1;
+        if (i < 0 || j < 0 || j >= t.blocks.length) return;
+        [t.blocks[i], t.blocks[j]] = [t.blocks[j], t.blocks[i]];
+        renderEditor(); refreshAfterEdit();
+        const again = $(`[data-act="${act}"][data-b="${a.dataset.b}"]`);
+        if (again && !again.disabled) again.focus();
+        return;
+      }
+      case "del-block":
+        t.blocks = t.blocks.filter((b) => b.id !== a.dataset.b);
+        renderEditor(); refreshAfterEdit();
+        return;
+      case "add-block":
+        t.blocks.push(newBlock(a.dataset.type));
+        renderEditor(); refreshAfterEdit();
+        { const last = $$("#blocks .block").pop(); if (last) last.scrollIntoView({ block: "nearest", behavior: "smooth" }); }
+        return;
+      case "add-item": {
+        const b = findBlock(t, a.dataset.b);
+        b.items.push({ id: uid(), label: "LinkedIn", url: "{{linkedin}}", show: "text", icon: "profile" });
+        renderEditor(); refreshAfterEdit();
+        return;
+      }
+      case "del-item": {
+        const b = findBlock(t, a.dataset.b);
+        b.items = b.items.filter((x) => x.id !== a.dataset.i);
+        if (!b.items.length) t.blocks = t.blocks.filter((x) => x.id !== b.id);
+        renderEditor(); refreshAfterEdit();
+        return;
+      }
+      case "logo-sample":
+        t.logo.src = LOGOS[a.dataset.kind].src;
+        t.logo.kind = a.dataset.kind;
+        if (a.dataset.kind === "lockup") { t.logo.position = "top"; t.logo.width = Math.max(t.logo.width, 170); }
+        else { t.logo.position = "left"; t.logo.width = Math.min(t.logo.width, 90); }
+        renderEditor(); refreshAfterEdit();
+        return;
+      case "logo-remove":
+        t.logo.src = ""; t.logo.kind = "";
+        renderEditor(); refreshAfterEdit();
+        return;
+      case "insert": {
+        const token = "{{" + a.dataset.key + "}}";
+        const f = lastField && document.body.contains(lastField) ? lastField : null;
+        if (!f) { toast("Click in a line first, then choose a detail."); return; }
+        const s = f.selectionStart != null ? f.selectionStart : f.value.length;
+        const en = f.selectionEnd != null ? f.selectionEnd : f.value.length;
+        f.value = f.value.slice(0, s) + token + f.value.slice(en);
+        f.focus();
+        f.setSelectionRange(s + token.length, s + token.length);
+        f.dispatchEvent(new Event("input", { bubbles: true }));
+        return;
+      }
+      default:
+        return;
+    }
+  });
+
+  // Drag and drop with the handle (pointer events, so it also works on touch screens).
+  (function dragAndDrop() {
+    let drag = null;
+    const editor = $("#editor");
+    editor.addEventListener("pointerdown", (e) => {
+      const grip = e.target.closest("[data-grip]");
+      if (!grip) return;
+      const block = grip.closest(".block");
+      drag = { id: block.dataset.block, el: block, target: null, after: false };
+      block.classList.add("dragging");
+      grip.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+    editor.addEventListener("pointermove", (e) => {
+      if (!drag) return;
+      $$(".block", editor).forEach((b) => b.classList.remove("drop-before", "drop-after"));
+      const over = document.elementFromPoint(e.clientX, e.clientY);
+      const block = over && over.closest(".block");
+      if (!block || block === drag.el) { drag.target = null; return; }
+      const r = block.getBoundingClientRect();
+      drag.after = e.clientY > r.top + r.height / 2;
+      drag.target = block.dataset.block;
+      block.classList.add(drag.after ? "drop-after" : "drop-before");
+    });
+    const end = () => {
+      if (!drag) return;
+      const t = tpl(state.editing);
+      if (drag.target && t) {
+        const moving = t.blocks.find((b) => b.id === drag.id);
+        t.blocks = t.blocks.filter((b) => b.id !== drag.id);
+        let at = t.blocks.findIndex((b) => b.id === drag.target);
+        if (drag.after) at += 1;
+        t.blocks.splice(at, 0, moving);
+      }
+      drag = null;
+      renderEditor(); refreshAfterEdit();
+    };
+    editor.addEventListener("pointerup", end);
+    editor.addEventListener("pointercancel", end);
+  })();
+
+  $("#previewAs").addEventListener("change", (e) => { state.previewAs = e.target.value; renderDesignPreview(); });
+
+  // ---------- People tab ----------
+  function tplOptions(extra) {
+    return [...extra, ...state.templates.map((t) => [t.id, t.name]), ["none", "No signature"]];
+  }
+  function renderRules() {
+    const r = state.rules;
+    const rows = [];
+    rows.push(`<div class="rule-row"><div class="what">Organization default<small>Everyone, unless something below applies</small></div><select data-rule="orgNew" aria-label="Organization default">${optionList([...state.templates.map((t) => [t.id, t.name]), ["none", "No signature"]], r.orgNew)}</select></div>`);
+    rows.push(`<div class="rule-row"><div class="what">Replies and forwards<small>A shorter signature is common here</small></div><select data-rule="orgReply" aria-label="Replies and forwards">${optionList(tplOptions([["same", "Same as new messages"]]).filter((x) => x[0] !== "none").concat([["none", "No signature"]]), r.orgReply)}</select></div>`);
+    for (const d of Object.keys(r.domains)) {
+      rows.push(`<div class="rule-row"><div class="what">Domain: ${esc(d)}<small>${(() => { const n = state.people.filter((p) => p.domain === d).length; return n + (n === 1 ? " mailbox" : " mailboxes"); })()}</small></div><select data-rule="domain" data-key="${esc(d)}" aria-label="Default for ${esc(d)}">${optionList(tplOptions([["", "Use the organization default"]]), r.domains[d])}</select></div>`);
+    }
+    for (const g of state.groups) {
+      const n = state.people.filter((p) => p.groups.includes(g)).length;
+      if (!n) continue;
+      rows.push(`<div class="rule-row"><div class="what">Group: ${esc(g)}<small>${n} ${n === 1 ? "person" : "people"}</small></div><select data-rule="group" data-key="${esc(g)}" aria-label="Signature for the ${esc(g)} group">${optionList(tplOptions([["", "No group setting"]]), r.groups[g])}</select></div>`);
+    }
+    $("#rules").innerHTML = rows.join("");
+  }
+  $("#rules").addEventListener("change", (e) => {
+    const s = e.target, r = state.rules;
+    if (s.dataset.rule === "orgNew") r.orgNew = s.value;
+    else if (s.dataset.rule === "orgReply") r.orgReply = s.value;
+    else if (s.dataset.rule === "domain") r.domains[s.dataset.key] = s.value;
+    else if (s.dataset.rule === "group") r.groups[s.dataset.key] = s.value;
+    renderPeopleList(); renderTplBar();
+  });
+
+  function assignCell(label, res) {
+    return `<div class="assign"><span class="lbl">${label}</span><b>${esc(tplName(res.id))}</b><small>${esc(res.why)}</small></div>`;
+  }
+  function renderPeopleList() {
+    const box = $("#people");
+    const np = state.people.filter((p) => !p.shared).length, ns = state.people.filter((p) => p.shared).length;
+    $("#peopleCount").textContent = `${np} ${np === 1 ? "person" : "people"}, ${ns} shared ${ns === 1 ? "mailbox" : "mailboxes"}`;
+    box.innerHTML = state.people.map((p) => {
+      const open = state.openPerson === p.id;
+      const n = resolve(p, "new"), r = resolve(p, "reply");
+      return `<div class="person">
+        <div class="person-row">
+          <div class="who"><b>${esc(valueOf(p, "name"))}${p.shared ? '<span class="tag">Shared mailbox</span>' : ""}${p.isNew ? '<span class="tag new">New from sync</span>' : ""}</b><small>${esc(valueOf(p, "title"))}</small><small>${esc(p.email)}</small></div>
+          ${assignCell("New messages", n)}
+          ${assignCell("Replies", r)}
+          <button type="button" class="btn small" data-person="${p.id}" aria-expanded="${open}">${open ? "Close" : "Open"}</button>
+        </div>
+        ${open ? personDetail(p) : ""}
+      </div>`;
+    }).join("");
+  }
+  function personDetail(p) {
+    const mine = state.personal[p.id] || {};
+    const o = state.overrides[p.id] || {};
+    const fieldsFor = p.shared ? [["title", "Description"], ["phone", "Phone"]] : [["title", "Job title"], ["phone", "Office phone"], ["mobile", "Mobile"], ["booking_link", "Booking link"], ["linkedin", "LinkedIn"]];
+    const n = resolve(p, "new"), r = resolve(p, "reply");
+    return `<div class="person-detail" data-detail-for="${p.id}">
+      <div>
+        <h3 style="margin-top:0">Their own setting</h3>
+        <div class="field"><label>New messages</label><select data-own="new">${optionList(tplOptions([["", "Follow the rules"]]), mine.new || "")}</select></div>
+        <div class="field"><label>Replies and forwards</label><select data-own="reply">${optionList(tplOptions([["", "Follow the rules"]]), mine.reply || "")}</select></div>
+        <h3>Details</h3>
+        <p class="sub" style="margin-bottom:8px">${p.shared ? "Shared mailboxes come from Microsoft 365 too." : "From Microsoft 365. A change here overrides the directory and survives the next sync."}</p>
+        ${fieldsFor.map(([k, l]) => `<div class="field"><label>${l}${o[k] != null ? ' <span class="tag">Changed here</span>' : ""}</label><input type="text" data-ov="${k}" value="${esc(valueOf(p, k))}"></div>`).join("")}
+      </div>
+      <div>
+        <h3 style="margin-top:0">New messages: ${esc(tplName(n.id))}</h3>
+        <div class="mail-surface">${renderSignature(tpl(n.id), p) || '<p class="sig-empty">No signature.</p>'}</div>
+        <h3>Replies and forwards: ${esc(tplName(r.id))}</h3>
+        <div class="mail-surface">${renderSignature(tpl(r.id), p) || '<p class="sig-empty">No signature.</p>'}</div>
+      </div>
+    </div>`;
+  }
+  $("#people").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-person]");
+    if (!b) return;
+    state.openPerson = state.openPerson === b.dataset.person ? null : b.dataset.person;
+    renderPeopleList();
+    const again = $(`[data-person="${b.dataset.person}"]`);
+    if (again) again.focus();
+  });
+  $("#people").addEventListener("change", (e) => {
+    const box = e.target.closest("[data-detail-for]");
+    if (!box) return;
+    const id = box.dataset.detailFor;
+    if (e.target.dataset.own) {
+      state.personal[id] = state.personal[id] || {};
+      state.personal[id][e.target.dataset.own] = e.target.value;
+      renderPeopleList(); renderTplBar();
+      return;
+    }
+    if (e.target.dataset.ov) {
+      const p = person(id);
+      const k = e.target.dataset.ov;
+      state.overrides[id] = state.overrides[id] || {};
+      if (e.target.value === (p[k] || "")) delete state.overrides[id][k];
+      else state.overrides[id][k] = e.target.value.trim();
+      renderPeopleList(); renderDesignPreview(); renderPreviewAs();
+    }
+  });
+
+  function renderPeople() {
+    $("#orgName").value = state.org.name;
+    $("#orgSite").value = state.org.website;
+    renderRules();
+    renderPeopleList();
+  }
+  $("#orgName").addEventListener("input", (e) => { state.org.name = e.target.value; renderDesignPreview(); });
+  $("#orgSite").addEventListener("input", (e) => { state.org.website = e.target.value; renderDesignPreview(); });
+  $("#orgName").addEventListener("change", renderPeopleList);
+  $("#orgSite").addEventListener("change", renderPeopleList);
+
+  $("#syncBtn").addEventListener("click", () => {
+    const btn = $("#syncBtn"), st = $("#syncStatus");
+    btn.disabled = true;
+    st.hidden = false;
+    st.innerHTML = '<span class="spin" aria-hidden="true"></span>Reading the Microsoft 365 directory...';
+    setTimeout(() => {
+      let added = 0;
+      if (!state.synced) {
+        state.people.splice(state.people.length - 1, 0, clone(state.newHire));
+        state.synced = true;
+        added = 1;
+      }
+      btn.disabled = false;
+      st.textContent = added
+        ? `Synced ${state.people.length} mailboxes. 1 new person (Samira Haddad), titles and phone numbers checked, and the shared mailbox kept. Changes made here were not overwritten.`
+        : `Synced ${state.people.length} mailboxes. Nothing changed since the last sync.`;
+      renderRules(); renderPeopleList(); renderPreviewAs(); renderTplBar(); renderComposeAs();
+    }, 1200);
+  });
+
+  // ---------- Compose tab ----------
+  const compose = { open: false, kind: "new", userId: "p2", fromId: "p2", timers: [] };
+  function renderComposeAs() {
+    const sel = $("#composeAs");
+    const people = state.people.filter((p) => !p.shared);
+    if (!people.find((p) => p.id === compose.userId)) compose.userId = people[0].id;
+    sel.innerHTML = people.map((p) => `<option value="${p.id}"${p.id === compose.userId ? " selected" : ""}>${esc(valueOf(p, "name"))}</option>`).join("");
+  }
+  $("#composeAs").addEventListener("change", (e) => {
+    compose.userId = e.target.value;
+    compose.open = false;
+    clearTimers();
+    renderMail();
+    setLog([]);
+  });
+  function clearTimers() { compose.timers.forEach(clearTimeout); compose.timers = []; }
+  function setLog(items) {
+    const log = $("#log");
+    if (!items.length) { log.innerHTML = '<li class="muted" style="background:none;padding-left:0;animation:none">Start a message to see each step.</li>'; return; }
+    log.innerHTML = "";
+  }
+  function addLog(text, done) {
+    const li = document.createElement("li");
+    li.textContent = text;
+    if (done) li.className = "done";
+    $("#log").appendChild(li);
+  }
+  const ORIGINAL = {
+    from: "Alex Kim <alex.kim@partner.example>",
+    sent: "Wednesday, October 14, 2026 4:12 PM",
+    subject: "Briefing materials for Thursday",
+    body: "Hi all, I have attached the draft briefing for Thursday's meeting. Could you send any comments by noon tomorrow? Thanks, Alex"
+  };
+
+  function renderMail() {
+    const win = $("#mailwin");
+    if (!compose.open) {
+      win.innerHTML = `<div class="empty-compose"><p style="font-size:16px;margin:0 0 6px;color:var(--ink-soft)">No message open</p><p style="margin:0">Choose New message, Reply, or Forward. The window below stands in for Outlook.</p></div>`;
+      return;
+    }
+    const u = person(compose.userId);
+    const froms = [u, ...state.people.filter((p) => p.shared)];
+    const subject = compose.kind === "reply" ? "RE: " + ORIGINAL.subject : compose.kind === "forward" ? "FW: " + ORIGINAL.subject : "";
+    const to = compose.kind === "reply" ? "Alex Kim" : "";
+    const quoted = compose.kind === "new" ? "" : `<div class="quoted" contenteditable="false">
+        ${compose.kind === "forward" ? "<div>---------- Forwarded message ----------</div>" : ""}
+        <div><b>From:</b> ${esc(ORIGINAL.from)}</div><div><b>Sent:</b> ${esc(ORIGINAL.sent)}</div><div><b>Subject:</b> ${esc(ORIGINAL.subject)}</div>
+        <p>${esc(ORIGINAL.body)}</p></div>`;
+    win.innerHTML = `
+      <div class="mailbar"><span class="title">${compose.kind === "new" ? "New message" : compose.kind === "reply" ? "Reply" : "Forward"}</span>
+        <button type="button" class="btn small primary" id="sendBtn">Send</button>
+        <button type="button" class="btn small" id="discardBtn">Discard</button></div>
+      <div class="mailfields">
+        <div class="mailfield"><span>From</span><select id="fromSel" aria-label="From">${froms.map((p) => `<option value="${p.id}"${p.id === compose.fromId ? " selected" : ""}>${esc(valueOf(p, "name"))} &lt;${esc(p.email)}&gt;</option>`).join("")}</select></div>
+        <div class="mailfield"><span>To</span><input type="text" aria-label="To" value="${esc(to)}" placeholder="Recipients"></div>
+        <div class="mailfield"><span>Subject</span><input type="text" aria-label="Subject" value="${esc(subject)}" placeholder="Add a subject"></div>
+      </div>
+      <div class="mailbody" contenteditable="true" aria-label="Message body" spellcheck="false">
+        <div class="typing"><br></div>
+        <div class="sig-slot" id="sigSlot" contenteditable="false"></div>
+        ${quoted}
+      </div>`;
+    $("#fromSel").addEventListener("change", (e) => {
+      compose.fromId = e.target.value;
+      insertSignature(true);
+    });
+    $("#sendBtn").addEventListener("click", () => toast("This is a simulation, so nothing was sent."));
+    $("#discardBtn").addEventListener("click", () => { compose.open = false; clearTimers(); renderMail(); setLog([]); });
+  }
+
+  function insertSignature(fromChanged) {
+    clearTimers();
+    const slot = $("#sigSlot");
+    if (!slot) return;
+    const from = person(compose.fromId);
+    const kind = compose.kind === "new" ? "new" : "reply";
+    const res = resolve(from, kind);
+    const steps = [];
+    if (fromChanged) {
+      steps.push([0, `The From address changed to ${valueOf(from, "name")}, so Outlook started Cachet again.`]);
+    } else {
+      const what = compose.kind === "new" ? "a new message" : compose.kind === "reply" ? "a reply" : "a forward";
+      steps.push([0, `You started ${what}. Outlook started Cachet on its own, with no button to press.`]);
+    }
+    steps.push([380, `Cachet asked for the signature of ${from.email}, sending a sign-in token from Microsoft.`]);
+    steps.push([760, `The token checked out: issued by Microsoft, meant for Cachet, unexpired, and from an organization Cachet serves.`]);
+    if (from.shared) steps.push([980, "Press Office is a shared mailbox in the same organization. Exchange still decides who may send from it."]);
+    steps.push([1180, res.id ? `Chosen template: ${tplName(res.id)} (${res.why.toLowerCase()}). Details filled in; empty ones left out.` : `No signature applies (${res.why.toLowerCase()}).`]);
+    const doneAt = 1450;
+    if (!fromChanged) $("#log").innerHTML = "";
+    for (const [ms, text] of steps) compose.timers.push(setTimeout(() => addLog(text), ms));
+    if (fromChanged && slot.innerHTML) slot.style.opacity = ".35";
+    compose.timers.push(setTimeout(() => {
+      slot.style.opacity = "";
+      slot.innerHTML = res.id ? renderSignature(tpl(res.id), from) : "";
+      slot.classList.add("flash");
+      setTimeout(() => slot.classList.remove("flash"), 900);
+      addLog(res.id ? (fromChanged ? "Signature replaced." : "Signature inserted.") : "Nothing inserted.", true);
+    }, doneAt));
+  }
+
+  $$("[data-compose]").forEach((b) => b.addEventListener("click", () => {
+    compose.kind = b.dataset.compose;
+    compose.fromId = compose.userId;
+    compose.open = true;
+    clearTimers();
+    renderMail();
+    insertSignature(false);
+  }));
+
+  // ---------- How it works links ----------
+  $("#linkMethod").href = REPO_URL + "/blob/main/METHODOLOGY.md";
+  $("#linkRepo").href = REPO_URL;
+
+  // ---------- Start ----------
+  renderDesign();
+  renderComposeAs();
+  renderMail();
+  let start = "design";
+  try { start = (location.hash || "#design").slice(1); } catch (e) { /* ignore */ }
+  showTab(start);
+  window.addEventListener("hashchange", () => showTab(location.hash.slice(1)));
+})();
+</script>
+</body>
+</html>
